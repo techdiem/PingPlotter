@@ -4,8 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.IO;
+using System.Net;
 using LiveCharts;
 using LiveCharts.Configurations;
+using System.Net.NetworkInformation;
 
 namespace PingPlotter
 {
@@ -14,7 +16,9 @@ namespace PingPlotter
         private double _axisMax;
         private double _axisMin;
         private string hostInfo = "";
+        private IPAddress hostIP;
         private int pingCounter = 0;
+        private int lossCounter = -1;
         private string csvPath = "";
         private TextWriter swrt;
 
@@ -93,25 +97,40 @@ namespace PingPlotter
 
         private void Read() {
             while (IsReading) {
-                var now = DateTime.Now;
+                DateTime now = DateTime.Now;
 
-                long rtt = PingUtil.PingHost(hostInfo).RoundtripTime;
+                PingReply pingResult = PingUtil.PingHost(hostIP);
+                string logResult;
                 pingCounter++;
 
-                ChartValues.Add(new MeasureModel
+                if (pingResult == null || pingResult.Status != IPStatus.Success)
                 {
-                    DateTime = now,
-                    Value = rtt
-                });
+                    lossCounter++;
+                    logResult = "lost";
+                }
+                else
+                {
+                    ChartValues.Add(new MeasureModel
+                    {
+                        DateTime = now,
+                        Value = pingResult.RoundtripTime
+                    });
+                    logResult = pingResult.RoundtripTime.ToString();
+                }
 
+                lblPacketLoss.Dispatcher.Invoke(new Action(() =>
+                {
+                    lblPacketLoss.Content = string.Concat("Paketverlust: ", lossCounter);
+                }));
                 SetAxisLimits(now);
 
                 //lets only use the last 150 values
                 if (ChartValues.Count > 150) ChartValues.RemoveAt(0);
 
+                //Log to CSV if enabled
                 if (swrt != null)
                 {
-                    swrt.WriteLine("{0},{1},{2}", pingCounter.ToString(), now.TimeOfDay, rtt.ToString());
+                    swrt.WriteLine("{0},{1},{2}", pingCounter.ToString(), now.TimeOfDay, logResult);
                 }
 
                 Thread.Sleep(1000);
@@ -145,6 +164,7 @@ namespace PingPlotter
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
+            hostIP = PingUtil.GetIpFromHost(ref hostInfo);
             if (csvPath != null)
             {
                 swrt = new StreamWriter(csvPath);

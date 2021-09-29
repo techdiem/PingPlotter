@@ -11,7 +11,7 @@ namespace PingPlotter
 {
     class PingUtil
     {
-        private static IPAddress GetIpFromHost(ref string host)
+        public static IPAddress GetIpFromHost(ref string host)
         {
             //variable to hold our error message (if something fails)
             string errMessage = string.Empty;
@@ -35,11 +35,8 @@ namespace PingPlotter
         }
 
 
-        public static PingReply PingHost(string host)
+        public static PingReply PingHost(IPAddress host)
         {
-            //IPAddress instance for holding the returned host
-            IPAddress address = GetIpFromHost(ref host);
-
             //set the ping options, TTL 128
             PingOptions pingOptions = new PingOptions(128, true);
 
@@ -58,16 +55,11 @@ namespace PingPlotter
                     //2) The timeout value
                     //3) A buffer (our byte array)
                     //4) PingOptions
-                    PingReply pingReply = ping.Send(address, 1000, buffer, pingOptions);
+                    PingReply pingReply = ping.Send(host, 1000, buffer, pingOptions);
 
                     return pingReply;
                 }
-                catch (PingException ex) {
-                    Console.WriteLine(string.Format("Connection Error: {0}", ex.Message));
-                    return null;
-                }
-                catch (SocketException ex) {
-                    Console.WriteLine(string.Format("Connection Error: {0}", ex.Message));
+                catch {
                     return null;
                 }
             } else {
