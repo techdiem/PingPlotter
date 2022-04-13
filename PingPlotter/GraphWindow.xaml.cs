@@ -167,8 +167,14 @@ namespace PingPlotter
                 }));
                 SetAxisLimits(now);
 
-                //lets only use the last 150 values
-                //if (ChartValues.Count > 150) ChartValues.RemoveAt(0);
+                //only use the last 150 values
+                if (SeriesCollection[0].Values.Count > 150)
+                {
+                    for (int i = 0; i < SeriesCollection.Count; i++)
+                    {
+                        SeriesCollection[i].Values.RemoveAt(0);
+                    }
+                }
 
                 pingCounter++;
                 //Log to CSV if enabled
