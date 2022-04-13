@@ -17,7 +17,7 @@ namespace PingPlotter
         private double _axisMax;
         private double _axisMin;
         private int pingCounter = 0;
-        private int lossCounter = -1;
+        private int lossCounter = 0;
         private TextWriter swrt;
         private IPAddress[] hostIP;
 
