@@ -18,13 +18,11 @@ namespace PingPlotter
         private double _axisMin;
         private int pingCounter = 0;
         private int lossCounter = -1;
-        private string csvPath = "";
         private TextWriter swrt;
         private IPAddress[] hostIP;
 
         public GraphWindow(string hostInformation, string CSVFilePath)
         {
-            csvPath = CSVFilePath;
             InitializeComponent();
 
             Title = string.Concat(hostInformation, " - PingPlotter");
@@ -78,6 +76,14 @@ namespace PingPlotter
             }
 
 
+            //Initialize CSV writer
+            if (CSVFilePath != null)
+            {
+                swrt = new StreamWriter(CSVFilePath);
+                swrt.WriteLine("Ping,Time,{0}", string.Join(",", hosts));
+            }
+
+
             IsReading = true;
             Task.Factory.StartNew(Read);
 
@@ -127,7 +133,7 @@ namespace PingPlotter
             while (IsReading) {
                 DateTime now = DateTime.Now;
 
-                string logResult;
+                string[] logResult = new string[hostIP.Length];
                 int ipindex = 0;
 
                 foreach (IPAddress ip in hostIP)
@@ -137,7 +143,7 @@ namespace PingPlotter
                     if (pingResult == null || pingResult.Status != IPStatus.Success)
                     {
                         lossCounter++;
-                        logResult = "lost";
+                        logResult[ipindex] = "lost";
                     }
                     else
                     {
@@ -148,7 +154,7 @@ namespace PingPlotter
                                 Value = pingResult.RoundtripTime
                             });
 
-                        logResult = pingResult.RoundtripTime.ToString();
+                        logResult[ipindex] = pingResult.RoundtripTime.ToString();
                     }
 
                     ipindex++;
@@ -166,10 +172,14 @@ namespace PingPlotter
 
                 pingCounter++;
                 //Log to CSV if enabled
-                /*if (swrt != null)
+                if (swrt != null)
                 {
-                    swrt.WriteLine("{0},{1},{2}", pingCounter.ToString(), now.TimeOfDay, logResult);
-                }*/
+                    swrt.WriteLine("{0},{1},{2}", pingCounter.ToString(), now.TimeOfDay, string.Join(",", logResult));
+                    if (pingCounter % 20 == 0)
+                    {
+                        swrt.FlushAsync();
+                    }
+                }
 
                 Thread.Sleep(1000);
             }
@@ -198,16 +208,6 @@ namespace PingPlotter
         }
 
         #endregion
-
-
-        private void WindowLoaded(object sender, RoutedEventArgs e)
-        {
-
-            if (csvPath != null)
-            {
-                swrt = new StreamWriter(csvPath);
-            }
-        }
 
         private void WindowClosing(object sender, CancelEventArgs e)
         {

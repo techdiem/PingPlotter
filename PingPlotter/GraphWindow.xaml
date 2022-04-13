@@ -6,7 +6,7 @@
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              xmlns:constantChanges="clr-namespace:PingPlotter"
              mc:Ignorable="d" 
-             d:DesignHeight="400" d:DesignWidth="600" d:DataContext="{d:DesignInstance constantChanges:GraphWindow}" Loaded="WindowLoaded" Closing="WindowClosing" Icon="Application_Icon.ico">
+             d:DesignHeight="400" d:DesignWidth="600" d:DataContext="{d:DesignInstance constantChanges:GraphWindow}" Closing="WindowClosing" Icon="Application_Icon.ico">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
