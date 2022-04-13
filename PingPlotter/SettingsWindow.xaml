@@ -17,11 +17,13 @@
         </Grid.RowDefinitions>
         <Button Content="Ping Starten" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Width="200" Height="50" FontSize="16" Click="startPing" Grid.ColumnSpan="2" Margin="97,27"/>
         <Label Content="IP Adresse / Hostname:" HorizontalAlignment="Left" Margin="6,83,0,0" VerticalAlignment="Top" Height="26" Width="133"/>
-        <TextBox x:Name="textBoxHost" HorizontalAlignment="Left" Height="23" Margin="152,86,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="208" TextChanged="textBoxHost_TextChanged" Grid.ColumnSpan="2" KeyDown="textBoxHost_KeyDown"/>
+        <TextBox x:Name="textBoxHost" HorizontalAlignment="Left" Height="30" Margin="163,81,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="208" TextChanged="textBoxHost_TextChanged" Grid.ColumnSpan="2" KeyDown="textBoxHost_KeyDown" VerticalScrollBarVisibility="Auto"/>
+        <Label Content="Mehrere Hosts mit Komma ohne Leerzeichen getrennt" HorizontalAlignment="Left" Margin="163,111,0,0" VerticalAlignment="Top" FontSize="8.3" Grid.ColumnSpan="2" Width="208"/>
+
         <Label x:Name="lblHost" Content="PingPlotter" HorizontalAlignment="Center" Margin="106,4,106,0" VerticalAlignment="Top" FontSize="36" FontFamily="Tempus Sans ITC" Height="57" Width="182" Grid.ColumnSpan="2"/>
-        <CheckBox x:Name="CheckCSVSave" Content="Pingwerte als CSV abspeichern" HorizontalAlignment="Left" Margin="6,153,0,0" VerticalAlignment="Top" Checked="CSVCheckChanged" Unchecked="CSVCheckChanged" Height="15" Width="182"/>
-        <TextBox x:Name="textBoxCSVPath" HorizontalAlignment="Left" Height="23" Margin="6,210,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="314" IsEnabled="False" Grid.ColumnSpan="2"/>
-        <Label x:Name="lblCSVPath" Content="Pfad zur CSV:" HorizontalAlignment="Left" Margin="6,179,0,0" VerticalAlignment="Top" IsEnabled="False" Height="26" Width="80"/>
+        <CheckBox x:Name="CheckCSVSave" Content="Pingwerte als CSV abspeichern" HorizontalAlignment="Left" Margin="6,163,0,0" VerticalAlignment="Top" Checked="CSVCheckChanged" Unchecked="CSVCheckChanged" Height="15" Width="182"/>
+        <TextBox x:Name="textBoxCSVPath" HorizontalAlignment="Left" Height="23" Margin="6,220,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="314" IsEnabled="False" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto"/>
+        <Label x:Name="lblCSVPath" Content="Pfad zur CSV:" HorizontalAlignment="Left" Margin="6,189,0,0" VerticalAlignment="Top" IsEnabled="False" Height="26" Width="80"/>
 
     </Grid>
 </Window>
