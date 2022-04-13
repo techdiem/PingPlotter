@@ -16,20 +16,18 @@ namespace PingPlotter
     {
         private double _axisMax;
         private double _axisMin;
-        private string hostInfo = "";
-        private IPAddress hostIP;
         private int pingCounter = 0;
         private int lossCounter = -1;
         private string csvPath = "";
         private TextWriter swrt;
+        private IPAddress[] hostIP;
 
         public GraphWindow(string hostInformation, string CSVFilePath)
         {
-            hostInfo = hostInformation;
             csvPath = CSVFilePath;
             InitializeComponent();
 
-            Title = string.Concat(hostInfo, " - PingPlotter");
+            Title = string.Concat(hostInformation, " - PingPlotter");
 
             //To handle live data easily, in this case we built a specialized type
             //the MeasureModel class, it only contains 2 properties
@@ -48,15 +46,9 @@ namespace PingPlotter
 
             //lets save the mapper globally.
             Charting.For<MeasureModel>(mapper);
-
-            SeriesCollection = new SeriesCollection
-            {
-                new LineSeries
-                {
-                    Title = "Series 1",
-                    Values = new ChartValues<MeasureModel> { },
-                }
-            };
+            
+            //Initialize SeriesCollection to store ping data of multiple hosts
+            SeriesCollection = new SeriesCollection {};
 
             //lets set how to display the X Labels
             DateTimeFormatter = value => new DateTime((long)value).ToString("mm:ss");
@@ -69,6 +61,22 @@ namespace PingPlotter
 
             SetAxisLimits(DateTime.Now);
 
+            string[] hosts = hostInformation.Split(',');
+            hostIP = new IPAddress[hosts.Length];
+
+            for (int i = 0; i < hosts.Length; i++)
+            {
+                hostIP[i] = PingUtil.GetIpFromHost(hosts[i]);
+
+                SeriesCollection.Add(new LineSeries
+                {
+                    Title = hosts[i],
+                    Values = new ChartValues<MeasureModel> { },
+                    Fill = System.Windows.Media.Brushes.Transparent,
+                    LineSmoothness = 0,
+                });
+            }
+
 
             IsReading = true;
             Task.Factory.StartNew(Read);
@@ -77,6 +85,18 @@ namespace PingPlotter
         }
 
         public SeriesCollection SeriesCollection { get; set; }
+        public string ChartLegend {
+            get
+            {
+                if (hostIP.Length > 1) {
+                    return "Right";
+                }
+                else
+                {
+                    return "None";
+                }
+            }
+        }
 
         public Func<double, string> DateTimeFormatter { get; set; }
         public double AxisStep { get; set; }
@@ -107,27 +127,34 @@ namespace PingPlotter
             while (IsReading) {
                 DateTime now = DateTime.Now;
 
-                PingReply pingResult = PingUtil.PingHost(hostIP);
                 string logResult;
-                pingCounter++;
+                int ipindex = 0;
 
-                if (pingResult == null || pingResult.Status != IPStatus.Success)
+                foreach (IPAddress ip in hostIP)
                 {
-                    lossCounter++;
-                    logResult = "lost";
-                }
-                else
-                {
-                    SeriesCollection[0].Values.Add(
-                        new MeasureModel
-                        {
-                            DateTime = now,
-                            Value = pingResult.RoundtripTime
-                        });
-                    
-                    logResult = pingResult.RoundtripTime.ToString();
+                    PingReply pingResult = PingUtil.PingHost(ip);
+
+                    if (pingResult == null || pingResult.Status != IPStatus.Success)
+                    {
+                        lossCounter++;
+                        logResult = "lost";
+                    }
+                    else
+                    {
+                        SeriesCollection[ipindex].Values.Add(
+                            new MeasureModel
+                            {
+                                DateTime = now,
+                                Value = pingResult.RoundtripTime
+                            });
+
+                        logResult = pingResult.RoundtripTime.ToString();
+                    }
+
+                    ipindex++;
                 }
 
+                
                 lblPacketLoss.Dispatcher.Invoke(new Action(() =>
                 {
                     lblPacketLoss.Content = string.Concat("Paketverlust: ", lossCounter);
@@ -137,11 +164,12 @@ namespace PingPlotter
                 //lets only use the last 150 values
                 //if (ChartValues.Count > 150) ChartValues.RemoveAt(0);
 
+                pingCounter++;
                 //Log to CSV if enabled
-                if (swrt != null)
+                /*if (swrt != null)
                 {
                     swrt.WriteLine("{0},{1},{2}", pingCounter.ToString(), now.TimeOfDay, logResult);
-                }
+                }*/
 
                 Thread.Sleep(1000);
             }
@@ -174,7 +202,7 @@ namespace PingPlotter
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-            hostIP = PingUtil.GetIpFromHost(ref hostInfo);
+
             if (csvPath != null)
             {
                 swrt = new StreamWriter(csvPath);

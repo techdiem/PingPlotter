@@ -11,7 +11,7 @@ namespace PingPlotter
 {
     class PingUtil
     {
-        public static IPAddress GetIpFromHost(ref string host)
+        public static IPAddress GetIpFromHost(string host)
         {
             //variable to hold our error message (if something fails)
             string errMessage = string.Empty;
