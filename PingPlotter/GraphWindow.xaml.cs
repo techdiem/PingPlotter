@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.IO;
-using System.Net;
 using LiveCharts;
 using LiveCharts.Configurations;
 using System.Net.NetworkInformation;
@@ -19,7 +18,7 @@ namespace PingPlotter
         private int pingCounter = 0;
         private int lossCounter = 0;
         private TextWriter swrt;
-        private IPAddress[] hostIP;
+        private string[] hostnames;
 
         public GraphWindow(string hostInformation, string CSVFilePath)
         {
@@ -59,16 +58,13 @@ namespace PingPlotter
 
             SetAxisLimits(DateTime.Now);
 
-            string[] hosts = hostInformation.Split(',');
-            hostIP = new IPAddress[hosts.Length];
+            hostnames = hostInformation.Split(',');
 
-            for (int i = 0; i < hosts.Length; i++)
-            {
-                hostIP[i] = PingUtil.GetIpFromHost(hosts[i]);
-
+            for (int i = 0; i < hostnames.Length; i++)
+            { 
                 SeriesCollection.Add(new LineSeries
                 {
-                    Title = hosts[i],
+                    Title = hostnames[i],
                     Values = new ChartValues<MeasureModel> { },
                     Fill = System.Windows.Media.Brushes.Transparent,
                     LineSmoothness = 0,
@@ -80,7 +76,7 @@ namespace PingPlotter
             if (CSVFilePath != null)
             {
                 swrt = new StreamWriter(CSVFilePath);
-                swrt.WriteLine("Ping,Time,{0}", string.Join(",", hosts));
+                swrt.WriteLine("Ping,Time,{0}", string.Join(",", hostnames));
             }
 
 
@@ -94,7 +90,7 @@ namespace PingPlotter
         public string ChartLegend {
             get
             {
-                if (hostIP.Length > 1) {
+                if (hostnames.Length > 1) {
                     return "Right";
                 }
                 else
@@ -133,12 +129,12 @@ namespace PingPlotter
             while (IsReading) {
                 DateTime now = DateTime.Now;
 
-                string[] logResult = new string[hostIP.Length];
+                string[] logResult = new string[hostnames.Length];
                 int ipindex = 0;
 
-                foreach (IPAddress ip in hostIP)
+                foreach (string host in hostnames)
                 {
-                    PingReply pingResult = PingUtil.PingHost(ip);
+                    PingReply pingResult = PingUtil.PingHost(host);
 
                     if (pingResult == null || pingResult.Status != IPStatus.Success)
                     {

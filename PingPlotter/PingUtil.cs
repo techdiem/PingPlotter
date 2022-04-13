@@ -1,41 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net.NetworkInformation;
 
 namespace PingPlotter
 {
     class PingUtil
     {
-        public static IPAddress GetIpFromHost(string host)
-        {
-            //variable to hold our error message (if something fails)
-            string errMessage = string.Empty;
-
-            //IPAddress instance for holding the returned host
-            IPAddress address = null;
-
-            //wrap the attempt in a try..catch to capture
-            //any exceptions that may occur
-            try
-            {
-                //get the host IP from the name provided
-                address = Dns.GetHostEntry(host).AddressList[0];
-            }
-            catch (SocketException ex)
-            {
-                //some DNS error happened, return the message
-                Console.WriteLine(string.Format("DNS Error: {0}", ex.Message));
-            }
-            return address;
-        }
-
-
-        public static PingReply PingHost(IPAddress host)
+        public static PingReply PingHost(string host)
         {
             //set the ping options, TTL 128
             PingOptions pingOptions = new PingOptions(128, true);
