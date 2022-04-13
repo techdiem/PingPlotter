@@ -8,6 +8,7 @@ using System.Net;
 using LiveCharts;
 using LiveCharts.Configurations;
 using System.Net.NetworkInformation;
+using LiveCharts.Wpf;
 
 namespace PingPlotter
 {
@@ -48,8 +49,14 @@ namespace PingPlotter
             //lets save the mapper globally.
             Charting.For<MeasureModel>(mapper);
 
-            //the values property will store our values array
-            ChartValues = new ChartValues<MeasureModel>();
+            SeriesCollection = new SeriesCollection
+            {
+                new LineSeries
+                {
+                    Title = "Series 1",
+                    Values = new ChartValues<MeasureModel> { },
+                }
+            };
 
             //lets set how to display the X Labels
             DateTimeFormatter = value => new DateTime((long)value).ToString("mm:ss");
@@ -69,7 +76,8 @@ namespace PingPlotter
             DataContext = this;
         }
 
-        public ChartValues<MeasureModel> ChartValues { get; set; }
+        public SeriesCollection SeriesCollection { get; set; }
+
         public Func<double, string> DateTimeFormatter { get; set; }
         public double AxisStep { get; set; }
         public double AxisUnit { get; set; }
@@ -110,11 +118,13 @@ namespace PingPlotter
                 }
                 else
                 {
-                    ChartValues.Add(new MeasureModel
-                    {
-                        DateTime = now,
-                        Value = pingResult.RoundtripTime
-                    });
+                    SeriesCollection[0].Values.Add(
+                        new MeasureModel
+                        {
+                            DateTime = now,
+                            Value = pingResult.RoundtripTime
+                        });
+                    
                     logResult = pingResult.RoundtripTime.ToString();
                 }
 
@@ -125,7 +135,7 @@ namespace PingPlotter
                 SetAxisLimits(now);
 
                 //lets only use the last 150 values
-                if (ChartValues.Count > 150) ChartValues.RemoveAt(0);
+                //if (ChartValues.Count > 150) ChartValues.RemoveAt(0);
 
                 //Log to CSV if enabled
                 if (swrt != null)
